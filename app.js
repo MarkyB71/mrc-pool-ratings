@@ -158,7 +158,7 @@ function render(){
   $("demoBanner").hidden = !state.demo || !state.loaded.p;
   const n = state.ladder.results.length, act = state.ladder.list.filter(p=>p.active).length;
   $("sub").textContent = `${act} player${act===1?"":"s"} · ${n} rated match${n===1?"":"es"}${state.demo?" · example data":""}`;
-  $("heroSub").textContent = {table:"Full standings",enter:"Enter a result",results:"All results",player:"Player profile",h2h:"Head to head",stats:"Club statistics",admin:"Admin"}[state.tab] || "Full standings";
+  $("heroSub").textContent = {table:"Full standings",enter:"Enter a result",results:"All results",player:"Player profile",h2h:"Head to head",stats:"Club statistics",progress:"Build progress",admin:"Admin"}[state.tab] || "Full standings";
   renderTable(); renderEnter(); renderResults(); renderPlayer(); renderH2H(); renderStats(); renderAdmin();
 }
 
@@ -372,7 +372,7 @@ function setTab(tab){
   state.tab = tab;
   document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab===tab)));
   document.querySelectorAll("section.panel").forEach(s => s.hidden = s.id !== "p-"+tab);
-  const hs = document.getElementById("heroSub"); if (hs) hs.textContent = {table:"Full standings",enter:"Enter a result",results:"All results",player:"Player profile",h2h:"Head to head",stats:"Club statistics",admin:"Admin"}[tab];
+  const hs = document.getElementById("heroSub"); if (hs) hs.textContent = {table:"Full standings",enter:"Enter a result",results:"All results",player:"Player profile",h2h:"Head to head",stats:"Club statistics",progress:"Build progress",admin:"Admin"}[tab];
   try { localStorage.setItem("mrc-tab", tab); } catch {}
   window.scrollTo({top:0});
 }

@@ -194,6 +194,12 @@ tr.top1 .rating{color:var(--gold)}
 .banner{border-radius:var(--radius)}
 .toast{border-radius:300px;padding:12px 20px;background:#071928;color:#fff;box-shadow:0 0 0 2px var(--cyan)}
 .num{font-variant-numeric:tabular-nums}
+.plist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.plist li{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;line-height:1.45}
+.plist li::before{content:"";width:18px;height:18px;border-radius:50%;margin-top:2px;display:grid;place-items:center;font:700 11px var(--font-display);color:#fff}
+.plist li.ok::before{content:"✓";background:var(--win)}
+.plist li.todo::before{background:transparent;box-shadow:inset 0 0 0 2px var(--line)}
+.plist li.ask::before{content:"?";background:var(--gold)}
 section.panel{grid-template-columns:minmax(0,1fr)}
 section.panel>*,.grid2>*{min-width:0}
 #divFilter{min-width:0}
@@ -222,6 +228,7 @@ section.panel>*,.grid2>*{min-width:0}
       <button role="tab" data-tab="player">Players</button>
       <button role="tab" data-tab="h2h">Head to head</button>
       <button role="tab" data-tab="stats">Stats</button>
+      <button role="tab" data-tab="progress">Progress</button>
       <button role="tab" data-tab="admin" data-admin>Admin</button>
     </nav>
   </div>
@@ -310,6 +317,51 @@ section.panel>*,.grid2>*{min-width:0}
     </div>
   </section>
 
+  <!-- PROGRESS -->
+  <section class="panel" id="p-progress" hidden>
+    <h2>Build progress</h2>
+    <p class="muted" style="margin:0;max-width:65ch">This is a test version of the MRC Pool Club rating system. Here's how it measures up against the original brief.</p>
+    <div class="grid2">
+      <div class="card"><h3 style="margin-bottom:10px">Done</h3><ul class="plist">
+        <li class="ok">Player details: name, rating, matches, wins, losses, win %, highest rating, division, match history and head-to-heads</li>
+        <li class="ok">New players start at 400 and can't drop below 250</li>
+        <li class="ok">Expected score and rating change use the Elo formula</li>
+        <li class="ok">K-factor of 40, 25 or 15 depending on matches played</li>
+        <li class="ok">Divisions update automatically</li>
+        <li class="ok">Saving one result updates ratings, records, head-to-heads, history and the table</li>
+        <li class="ok">League table with rank, rating, last change, played, wins, losses, win % and division</li>
+        <li class="ok">Stats: highest-rated, biggest gain, longest winning streak, most matches</li>
+        <li class="ok">Head-to-head between any two players</li>
+        <li class="ok">Match history showing the rating change after every result</li>
+        <li class="ok">Rating graph over time for each player</li>
+        <li class="ok">Player profile pages</li>
+        <li class="ok">Admin area protected by a PIN</li>
+        <li class="ok">Public leaderboard anyone can view</li>
+        <li class="ok">Live updates every 20 seconds</li>
+        <li class="ok">Export the table and results to Excel</li>
+        <li class="ok">Works on phones</li>
+        <li class="ok">Built so new features can be added later</li>
+        <li class="ok">Current club standings loaded from the website</li>
+      </ul></div>
+      <div style="display:grid;gap:16px;align-content:start">
+        <div class="card"><h3 style="margin-bottom:10px">Coming later</h3><ul class="plist">
+        <li class="todo">Tournament management</li>
+        <li class="todo">League management (seasons)</li>
+        <li class="todo">Handicap calculations</li>
+        <li class="todo">Qualification tracking for events</li>
+        <li class="todo">QR code player check-in</li>
+        <li class="todo">Installable phone app</li>
+        <li class="todo">Push notifications</li>
+        <li class="todo">Export to PDF</li>
+        </ul></div>
+        <div class="card"><h3 style="margin-bottom:10px">Needs your decision</h3><ul class="plist">
+        <li class="ask">When two players have different K-factors, should we use the average of both (so the winner gains exactly what the loser loses), or should each player use their own K?</li>
+        <li class="ask">Only the totals are on the website, so past match-by-match results aren't loaded. Is there a spreadsheet of past results to import?</li>
+        </ul></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ADMIN -->
   <section class="panel" id="p-admin" hidden>
     <h2>Admin</h2>
@@ -362,6 +414,6 @@ section.panel>*,.grid2>*{min-width:0}
 <footer class="table-foot"><p>MRC Pool Club · <a href="https://www.movementrecreationculture.com/pool-club" target="_blank" rel="noopener">movementrecreationculture.com</a></p></footer>
 <div class="toast" id="toast" hidden></div>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
