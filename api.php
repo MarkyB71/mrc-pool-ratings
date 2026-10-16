@@ -18,6 +18,13 @@ function newId() { return bin2hex(random_bytes(8)); }
 function cleanName($s) { return trim(preg_replace('/\s+/u', ' ', mb_substr((string)$s, 0, 60))); }
 function cleanDate($s) { return preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$s) ? $s : date('Y-m-d'); }
 
+// First run: start from the club's current standings if the store is empty.
+$seed = __DIR__ . '/seed-ladder.json';
+$cur = file_exists($file) ? json_decode(file_get_contents($file), true) : null;
+if (file_exists($seed) && (!is_array($cur) || (empty($cur['players']) && empty($cur['matches'])))) {
+  file_put_contents($file, file_get_contents($seed), LOCK_EX);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
   $data = file_exists($file) ? json_decode(file_get_contents($file), true) : blank();
   $data['hasPin'] = file_exists($pinFile);

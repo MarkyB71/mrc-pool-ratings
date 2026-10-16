@@ -3,4 +3,4 @@ deployment:
   tasks:
     - export DEPLOYPATH=$HOME/public_html/pool/
     - /bin/mkdir -p $DEPLOYPATH
-    - /bin/cp index.html app.js api.php logo.webp $DEPLOYPATH
+    - /bin/cp index.html app.js api.php logo.webp seed-ladder.json $DEPLOYPATH

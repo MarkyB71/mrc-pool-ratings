@@ -1,0 +1,126 @@
+{
+ "players": [
+  {
+   "id": "seed01",
+   "name": "Jacob Baylis",
+   "active": true,
+   "createdAt": 1792162262695,
+   "seedRating": 615.5,
+   "seedMatches": 59,
+   "seedWins": 43
+  },
+  {
+   "id": "seed02",
+   "name": "James Willson",
+   "active": true,
+   "createdAt": 1792162262696,
+   "seedRating": 503.1,
+   "seedMatches": 66,
+   "seedWins": 41
+  },
+  {
+   "id": "seed03",
+   "name": "Nevil Pritchard",
+   "active": true,
+   "createdAt": 1792162262697,
+   "seedRating": 482.9,
+   "seedMatches": 8,
+   "seedWins": 6
+  },
+  {
+   "id": "seed04",
+   "name": "Josh Bartholamew",
+   "active": true,
+   "createdAt": 1792162262698,
+   "seedRating": 444.8,
+   "seedMatches": 37,
+   "seedWins": 22
+  },
+  {
+   "id": "seed05",
+   "name": "Brian Hammond",
+   "active": true,
+   "createdAt": 1792162262699,
+   "seedRating": 406.0,
+   "seedMatches": 1,
+   "seedWins": 1
+  },
+  {
+   "id": "seed06",
+   "name": "Paul McCambridge",
+   "active": true,
+   "createdAt": 1792162262700,
+   "seedRating": 405.0,
+   "seedMatches": 20,
+   "seedWins": 11
+  },
+  {
+   "id": "seed07",
+   "name": "Dan Evans",
+   "active": true,
+   "createdAt": 1792162262701,
+   "seedRating": 401.2,
+   "seedMatches": 3,
+   "seedWins": 2
+  },
+  {
+   "id": "seed08",
+   "name": "Jamie Sheerwood",
+   "active": true,
+   "createdAt": 1792162262702,
+   "seedRating": 382.8,
+   "seedMatches": 8,
+   "seedWins": 3
+  },
+  {
+   "id": "seed09",
+   "name": "Owain Jones",
+   "active": true,
+   "createdAt": 1792162262703,
+   "seedRating": 381.3,
+   "seedMatches": 4,
+   "seedWins": 1
+  },
+  {
+   "id": "seed10",
+   "name": "Stuart Williams",
+   "active": true,
+   "createdAt": 1792162262704,
+   "seedRating": 369.7,
+   "seedMatches": 10,
+   "seedWins": 5
+  },
+  {
+   "id": "seed11",
+   "name": "Mark Truelove",
+   "active": true,
+   "createdAt": 1792162262705,
+   "seedRating": 363.8,
+   "seedMatches": 19,
+   "seedWins": 8
+  },
+  {
+   "id": "seed12",
+   "name": "Heulyn Greenslade",
+   "active": true,
+   "createdAt": 1792162262706,
+   "seedRating": 326.4,
+   "seedMatches": 48,
+   "seedWins": 18
+  },
+  {
+   "id": "seed13",
+   "name": "Scott Lee",
+   "active": true,
+   "createdAt": 1792162262707,
+   "seedRating": 250.0,
+   "seedMatches": 41,
+   "seedWins": 10
+  }
+ ],
+ "matches": [],
+ "settings": {
+  "kMode": "shared"
+ },
+ "rev": 1
+}
