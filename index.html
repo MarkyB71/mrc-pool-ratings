@@ -35,16 +35,16 @@ html,body{background:var(--bg);color:var(--fg)}
 body{font-family:var(--font-body);font-size:15px;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--baize)}
 .wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-header.band{background:var(--baize);color:var(--baize-ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.band{background:var(--baize);color:var(--baize-ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
 .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-block:14px 6px}
 .brand h1{font-family:var(--font-display);font-weight:700;font-size:30px;letter-spacing:.02em;margin:0;line-height:1}
 .brand .sub{font-size:13px;opacity:.8}
-nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs{display:flex;justify-content:safe center;gap:4px;overflow-x:auto;scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs button{font:600 16px/1 var(--font-display);letter-spacing:.06em;text-transform:uppercase;color:var(--baize-ink);opacity:.72;background:none;border:0;padding:12px 12px 13px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 nav.tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--baize-ink)}
 nav.tabs button:focus-visible{outline:2px solid var(--baize-ink);outline-offset:-4px}
-main{padding-block:20px 48px}
+main{padding-block:20px 8px}
 section.panel{display:grid;gap:20px}
 h2{font-family:var(--font-display);font-weight:700;font-size:26px;letter-spacing:.02em;margin:0;text-wrap:balance;line-height:1.1}
 h3{font-family:var(--font-display);font-weight:600;font-size:19px;letter-spacing:.04em;text-transform:uppercase;margin:0;color:var(--muted)}
@@ -128,13 +128,40 @@ tr.top1 .rank{color:var(--fg)}
 .err{color:var(--loss);font-size:13px}
 
 /* --- MRC house style overrides --- */
-header.band{box-shadow:0 2px 0 var(--cyan)}
+.band{box-shadow:0 1px 0 rgba(214,164,49,.55)}
+/* Hero: matches the club's printed leaderboard — dark pool-hall navy, lamp glows, gold title */
+.hero{position:relative;overflow:hidden;color:#fff;text-align:center;
+  background:
+    radial-gradient(140px 60px at 8% 46%, rgba(255,196,110,.35), transparent 70%),
+    radial-gradient(90px 40px at 92% 26%, rgba(255,196,110,.28), transparent 70%),
+    radial-gradient(70px 30px at 84% 62%, rgba(255,196,110,.18), transparent 70%),
+    linear-gradient(180deg, rgba(7,20,40,.78) 0%, rgba(4,10,20,.88) 100%),
+    url("https://images.squarespace-cdn.com/content/v1/67581990b8978c4495f6d55d/bf3f5ce8-7c38-4da7-8218-f14831582d07/POOL.jpg?format=1500w") center 40%/cover no-repeat,
+    radial-gradient(120% 90% at 50% 0%, #10284a 0%, #071428 55%, #040a14 100%)}
+/* Footer: the cue and balls from the club's leaderboard artwork */
+.table-foot{position:relative;height:min(31vw,280px);display:grid;align-content:end;color:#fff;text-align:center;
+  background:url("https://images.squarespace-cdn.com/content/v1/67581990b8978c4495f6d55d/0aeea02f-ceee-4ab9-ae7c-20eb8cdc40b0/ChatGPT+Image+Apr+2%2C+2026%2C+07_49_17+AM.png?format=1500w") center bottom/min(100%,900px) auto no-repeat,#120c08;margin-top:24px}
+.table-foot::before{content:"";position:absolute;inset:0 0 auto;height:40%;background:linear-gradient(var(--bg) 15%,transparent)}
+.table-foot p{position:relative;margin:0;padding-block:12px calc(14px + env(safe-area-inset-bottom,0px));font-size:12.5px;letter-spacing:.06em;background:linear-gradient(transparent,rgba(4,10,20,.75))}
+.table-foot a{color:#f0c75e}
+.hero::after{content:"";position:absolute;inset:auto 0 0;height:40%;background:linear-gradient(transparent,rgba(4,10,20,.6));pointer-events:none}
+.hero-in{position:relative;z-index:1;display:grid;justify-items:center;gap:2px;padding-block:28px 18px}
+.hero-logo{width:min(220px,48vw);height:auto;display:block}
+.hero-club{font:500 clamp(20px,4.6vw,30px)/1.1 var(--font-display);letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+.hero-title{margin:14px 0 0;font:700 clamp(34px,8vw,56px)/1 var(--font-display);letter-spacing:.03em;text-transform:uppercase;
+  background:linear-gradient(180deg,#f7dc8a 0%,#e2b54a 45%,#b8852a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.45))}
+.hero-rule{display:flex;align-items:center;gap:14px;width:min(420px,90%);margin-top:8px;font:500 clamp(12px,2.6vw,15px) var(--font-display);letter-spacing:.14em;text-transform:uppercase}
+.hero-rule::before,.hero-rule::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,#d6a431)}
+.hero-rule::after{background:linear-gradient(90deg,#d6a431,transparent)}
+.hero .sub{font-size:12px;opacity:.6;margin-top:10px;letter-spacing:.02em}
+#unlockBtn{position:absolute;top:14px;right:max(16px,env(safe-area-inset-right,0px));color:#fff}
 .brand{align-items:center;padding-block:16px 4px}
 .brand img{height:34px;width:auto;display:block}
 .brand h1{font-weight:700;font-size:22px;letter-spacing:.04em;text-transform:uppercase}
 .brand .sub{font-size:12.5px;opacity:.75}
 nav.tabs button{font:600 13px/1 var(--font-display);letter-spacing:.08em;opacity:.65;padding:14px 12px}
-nav.tabs button[aria-selected="true"]{border-bottom-color:var(--cyan);color:var(--cyan);opacity:1}
+nav.tabs button[aria-selected="true"]{border-bottom-color:#d6a431;color:#f0c75e;opacity:1}
 h2{font-weight:700;font-size:28px;letter-spacing:-.01em;text-transform:uppercase}
 h3{font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--muted)}
 .card,.tablewrap,.tile{border-radius:var(--radius);box-shadow:var(--shadow);border-color:transparent}
@@ -170,15 +197,24 @@ tr.top1 .rating{color:var(--gold)}
 section.panel{grid-template-columns:minmax(0,1fr)}
 section.panel>*,.grid2>*{min-width:0}
 #divFilter{min-width:0}
-@media (max-width:560px){.brand h1{font-size:26px}.preview{grid-template-columns:1fr}.preview .side.right{text-align:left}.preview .vs{display:none}}
+@media (max-width:560px){#unlockBtn{top:10px;padding:4px 10px!important;font-size:12px}.hero-in{padding-top:44px}.preview{grid-template-columns:1fr}.preview .side.right{text-align:left}.preview .vs{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 </head>
 <body>
-<header class="band">
+<header class="hero">
+  <div class="wrap hero-in">
+    <button class="btn link" id="unlockBtn">Admin login</button>
+    <img class="hero-logo" src="logo.webp" alt="MRC" width="300" height="102">
+    <div class="hero-club">Pool Club</div>
+    <h1 class="hero-title">Leaderboard</h1>
+    <div class="hero-rule"><span id="heroSub">Full standings</span></div>
+    <div class="sub" id="sub">loading…</div>
+  </div>
+</header>
+<div class="band">
   <div class="wrap">
-    <div class="brand"><img src="logo.webp" alt="MRC" width="100" height="34"><h1>Pool Club Ratings</h1><span class="sub" id="sub">Elo ladder · loading…</span><button class="btn link" id="unlockBtn" style="margin-left:auto;color:var(--baize-ink)">Admin login</button></div>
     <nav class="tabs" role="tablist" id="tabs">
       <button role="tab" data-tab="table" aria-selected="true">Table</button>
       <button role="tab" data-tab="enter" data-admin>Enter result</button>
@@ -189,7 +225,7 @@ section.panel>*,.grid2>*{min-width:0}
       <button role="tab" data-tab="admin" data-admin>Admin</button>
     </nav>
   </div>
-</header>
+</div>
 
 <main class="wrap">
   <div id="pinPanel" class="card" hidden style="margin-bottom:20px;display:grid;gap:10px;max-width:420px">
@@ -323,8 +359,9 @@ section.panel>*,.grid2>*{min-width:0}
     </div>
   </section>
 </main>
+<footer class="table-foot"><p>MRC Pool Club · <a href="https://www.movementrecreationculture.com/pool-club" target="_blank" rel="noopener">movementrecreationculture.com</a></p></footer>
 <div class="toast" id="toast" hidden></div>
 
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
