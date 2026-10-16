@@ -15,6 +15,8 @@ const RULES = {
     {min:-Infinity, name:"Development", cls:"d-dev"},
   ],
 };
+const r1 = x => Math.round(x * 10) / 10;
+const F = n => Number(n).toFixed(1);
 const divisionOf = r => RULES.divisions.find(d => r >= d.min);
 const expected = (a, b) => 1 / (1 + Math.pow(10, (b - a) / 400));
 
@@ -22,9 +24,9 @@ function computeLadder(players, matches, settings){
   const mode = settings.kMode === "individual" ? "individual" : "shared";
   const P = new Map();
   for (const p of players){
-    const r = Math.max(RULES.floor, Number.isFinite(+p.seedRating) && p.seedRating !== "" && p.seedRating != null ? +p.seedRating : RULES.start);
+    const r = r1(Math.max(RULES.floor, Number.isFinite(+p.seedRating) && p.seedRating !== "" && p.seedRating != null ? +p.seedRating : RULES.start));
     P.set(p.id, {id:p.id, name:p.name, active:p.active !== false, seedRating:r, seedMatches:+p.seedMatches||0,
-      rating:r, played:+p.seedMatches||0, ratedHere:0, wins:0, losses:0, peak:r, lastChange:null,
+      rating:r, played:+p.seedMatches||0, ratedHere:0, wins:Math.min(+p.seedWins||0, +p.seedMatches||0), losses:Math.max(0,(+p.seedMatches||0)-(+p.seedWins||0)), peak:r, lastChange:null,
       streak:0, bestStreak:0, form:[], h2h:{}, history:[], series:[{i:0, r, date:null}]});
   }
   const ordered = matches.filter(m => P.has(m.winnerId) && P.has(m.loserId) && m.winnerId !== m.loserId)
@@ -35,28 +37,28 @@ function computeLadder(players, matches, settings){
     const eW = expected(W.rating, L.rating);
     const kW = RULES.kFor(W.played), kL = RULES.kFor(L.played);
     let gain, loss;
-    if (mode === "shared"){ const k = (kW + kL) / 2; gain = loss = Math.round(k * (1 - eW)); }
-    else { gain = Math.round(kW * (1 - eW)); loss = Math.round(kL * (1 - eW)); }
-    loss = Math.max(0, Math.min(loss, L.rating - RULES.floor));
+    if (mode === "shared"){ const k = (kW + kL) / 2; gain = loss = r1(k * (1 - eW)); }
+    else { gain = r1(kW * (1 - eW)); loss = r1(kL * (1 - eW)); }
+    loss = Math.max(0, Math.min(loss, r1(L.rating - RULES.floor)));
     const res = {id:m.id, date:m.date, createdAt:m.createdAt, winnerId:W.id, loserId:L.id,
-      wBefore:W.rating, lBefore:L.rating, eW, kW, kL, gain, loss, wAfter:W.rating + gain, lAfter:L.rating - loss};
+      wBefore:W.rating, lBefore:L.rating, eW, kW, kL, gain, loss, wAfter:r1(W.rating + gain), lAfter:r1(L.rating - loss)};
     results.push(res);
     // winner
-    W.rating += gain; W.played++; W.ratedHere++; W.wins++; W.lastChange = gain; W.peak = Math.max(W.peak, W.rating);
+    W.rating = res.wAfter; W.played++; W.ratedHere++; W.wins++; W.lastChange = gain; W.peak = Math.max(W.peak, W.rating);
     W.streak = W.streak > 0 ? W.streak + 1 : 1; W.bestStreak = Math.max(W.bestStreak, W.streak);
     // loser
-    L.rating -= loss; L.played++; L.ratedHere++; L.losses++; L.lastChange = -loss;
+    L.rating = res.lAfter; L.played++; L.ratedHere++; L.losses++; L.lastChange = -loss;
     L.streak = L.streak < 0 ? L.streak - 1 : -1;
     for (const [me, op, won, d] of [[W, L, true, gain], [L, W, false, -loss]]){
       const h = me.h2h[op.id] ||= {w:0, l:0, net:0};
-      won ? h.w++ : h.l++; h.net += d;
+      won ? h.w++ : h.l++; h.net = r1(h.net + d);
       me.form.push(won ? "W" : "L");
       me.history.push(res);
       me.series.push({i:me.series.length, r:me.rating, date:m.date});
     }
   }
   const list = [...P.values()];
-  for (const p of list){ p.winPct = p.ratedHere ? p.wins / p.ratedHere * 100 : null; p.division = divisionOf(p.rating); }
+  for (const p of list){ p.winPct = p.played ? p.wins / p.played * 100 : null; p.division = divisionOf(p.rating); }
   return {players:P, list, results};
 }
 
@@ -143,7 +145,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const nameOf = id => state.ladder.players.get(id)?.name ?? "Unknown";
 const fmtDate = d => d ? new Date(d + "T12:00:00").toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"2-digit"}) : "—";
-const signed = n => n == null ? "—" : (n > 0 ? "+" + n : n < 0 ? "−" + Math.abs(n) : "0");
+const signed = n => n == null ? "—" : (n > 0 ? "+" + F(n) : n < 0 ? "−" + F(Math.abs(n)) : "0.0");
 const chg = n => `<span class="num ${n>0?"up":n<0?"down":"muted"}">${signed(n)}</span>`;
 const divChip = d => `<span class="div ${d.cls}">${d.name}</span>`;
 const pbtn = id => `<button class="pname" data-player="${esc(id)}">${esc(nameOf(id))}</button>`;
@@ -166,9 +168,9 @@ function renderTable(){
   const shown = rows.filter(p => state.divFilter === "All" || p.division.name === state.divFilter);
   $("tableBody").innerHTML = shown.length ? shown.map(p => {
     const rank = rows.indexOf(p) + 1;
-    return `<tr class="${rank===1?"top1":""}"><td class="rank">${rank}</td><td>${pbtn(p.id)}</td>
-      <td class="r rating">${p.rating}</td><td class="r">${chg(p.lastChange)}</td>
-      <td class="r num">${p.ratedHere}</td><td class="r num">${p.wins}</td><td class="r num">${p.losses}</td>
+    return `<tr class="${rank===1?"top1":""}"><td class="rank">${rank<=3?`<span class="medal m${rank}">${rank}</span>`:rank}</td><td>${pbtn(p.id)}</td>
+      <td class="r rating">${F(p.rating)}</td><td class="r">${chg(p.lastChange)}</td>
+      <td class="r num">${p.played}</td><td class="r num">${p.wins}</td><td class="r num">${p.losses}</td>
       <td class="r num">${p.winPct==null?"—":p.winPct.toFixed(0)+"%"}</td><td>${divChip(p.division)}</td>
       <td class="r">${p.form.slice(-5).map(f=>`<span class="result ${f==="W"?"w":"l"}">${f}</span>`).join(" ")||'<span class="muted small">—</span>'}</td></tr>`;
   }).join("") : `<tr><td colspan="10" class="empty">${rows.length ? "No players in this division." : "No players yet."}</td></tr>`;
@@ -189,8 +191,8 @@ function matchRow(r, opts={}){
     const won = r.winnerId === persp, op = won ? r.loserId : r.winnerId;
     const before = won ? r.wBefore : r.lBefore, after = won ? r.wAfter : r.lAfter;
     left = `<span class="date">${fmtDate(r.date)}</span>`;
-    who = `<span class="result ${won?"w":"l"}">${won?"W":"L"}</span> vs ${pbtn(op)} <span class="small muted num">(${won?r.lBefore:r.wBefore})</span>`;
-    right = `<span class="chg"><span class="num muted">${before}→${after}</span> ${chg(won?r.gain:-r.loss)}</span>`;
+    who = `<span class="result ${won?"w":"l"}">${won?"W":"L"}</span> vs ${pbtn(op)} <span class="small muted num">(${F(won?r.lBefore:r.wBefore)})</span>`;
+    right = `<span class="chg"><span class="num muted">${F(before)}→${F(after)}</span> ${chg(won?r.gain:-r.loss)}</span>`;
   } else {
     left = `<span class="date">${fmtDate(r.date)}</span>`;
     who = `<span>${pbtn(r.winnerId)} <span class="muted small">beat</span> ${pbtn(r.loserId)}</span>`;
@@ -214,9 +216,9 @@ function previewFor(wId, lId){
   const W = state.ladder.players.get(wId), L = state.ladder.players.get(lId);
   const eW = expected(W.rating, L.rating), kW = RULES.kFor(W.played), kL = RULES.kFor(L.played);
   let gain, loss;
-  if (state.settings.kMode === "individual"){ gain = Math.round(kW*(1-eW)); loss = Math.round(kL*(1-eW)); }
-  else { gain = loss = Math.round((kW+kL)/2*(1-eW)); }
-  loss = Math.max(0, Math.min(loss, L.rating - RULES.floor));
+  if (state.settings.kMode === "individual"){ gain = r1(kW*(1-eW)); loss = r1(kL*(1-eW)); }
+  else { gain = loss = r1((kW+kL)/2*(1-eW)); }
+  loss = Math.max(0, Math.min(loss, r1(L.rating - RULES.floor)));
   return {W, L, eW, kW, kL, gain, loss};
 }
 
@@ -228,9 +230,9 @@ function updatePreview(){
   if (!(w && l && w !== l)){ $("ePreview").innerHTML = `<div class="preview"><div class="side muted small" style="grid-column:1/-1">Choose both players to see the expected score and rating change before saving.</div></div>`; return; }
   const x = previewFor(w, l);
   $("ePreview").innerHTML = `<div class="preview">
-    <div class="side"><span class="small muted">Winner · K ${x.kW}</span><b>${esc(x.W.name)}</b><span class="big num">${x.W.rating} → ${x.W.rating + x.gain}</span><span>${chg(x.gain)} · expected ${(x.eW*100).toFixed(0)}%</span></div>
+    <div class="side"><span class="small muted">Winner · K ${x.kW}</span><b>${esc(x.W.name)}</b><span class="big num">${F(x.W.rating)} → ${F(x.W.rating + x.gain)}</span><span>${chg(x.gain)} · expected ${(x.eW*100).toFixed(0)}%</span></div>
     <div class="vs">VS</div>
-    <div class="side right"><span class="small muted">Loser · K ${x.kL}</span><b>${esc(x.L.name)}</b><span class="big num">${x.L.rating} → ${x.L.rating - x.loss}</span><span>${chg(-x.loss)} · expected ${((1-x.eW)*100).toFixed(0)}%</span></div>
+    <div class="side right"><span class="small muted">Loser · K ${x.kL}</span><b>${esc(x.L.name)}</b><span class="big num">${F(x.L.rating)} → ${F(x.L.rating - x.loss)}</span><span>${chg(-x.loss)} · expected ${((1-x.eW)*100).toFixed(0)}%</span></div>
     <div class="bar" title="Expected score"><i style="width:${(x.eW*100).toFixed(1)}%"></i></div>
   </div>`;
 }
@@ -285,9 +287,9 @@ function renderPlayer(){
   $("ppName").textContent = p.name;
   const streak = p.streak > 0 ? `${p.streak} win${p.streak>1?"s":""}` : p.streak < 0 ? `${-p.streak} loss${p.streak<-1?"es":""}` : "—";
   $("ppTiles").innerHTML = [
-    ["Rating", p.rating, rank ? `Rank ${rank} · ${divChip(p.division)}` : divChip(p.division)],
-    ["Record", `${p.wins}–${p.losses}`, p.winPct==null ? "No matches yet" : `${p.winPct.toFixed(0)}% won · ${p.ratedHere} played`],
-    ["Highest rating", p.peak, `Started at ${p.seedRating}`],
+    ["Rating", F(p.rating), rank ? `Rank ${rank} · ${divChip(p.division)}` : divChip(p.division)],
+    ["Record", `${p.wins}–${p.losses}`, p.winPct==null ? "No matches yet" : `${p.winPct.toFixed(0)}% won · ${p.played} played`],
+    ["Highest rating", F(p.peak), `Started at ${F(p.seedRating)}`],
     ["Current streak", streak, `Best winning run: ${p.bestStreak}`],
     ["K-factor now", RULES.kFor(p.played), `${p.played} rated matches counted`],
   ].map(([k,v,s]) => `<div class="tile"><span class="k">${k}</span><span class="v num">${v}</span><span class="s">${s}</span></div>`).join("");
@@ -311,9 +313,9 @@ function renderH2H(){
   const eA = expected(A.rating, B.rating);
   $("hOut").innerHTML = `
     <div class="card"><div class="preview" style="background:none;padding:0">
-      <div class="side"><b>${esc(A.name)}</b><span class="big num">${rec.w}</span><span class="small muted">wins · rating ${A.rating}</span></div>
+      <div class="side"><b>${esc(A.name)}</b><span class="big num">${rec.w}</span><span class="small muted">wins · rating ${F(A.rating)}</span></div>
       <div class="vs">VS</div>
-      <div class="side right"><b>${esc(B.name)}</b><span class="big num">${rec.l}</span><span class="small muted">wins · rating ${B.rating}</span></div>
+      <div class="side right"><b>${esc(B.name)}</b><span class="big num">${rec.l}</span><span class="small muted">wins · rating ${F(B.rating)}</span></div>
       <div class="bar"><i style="width:${(eA*100).toFixed(1)}%"></i></div>
       <div class="small muted" style="grid-column:1/-1">If they play today: ${esc(A.name)} expected ${(eA*100).toFixed(0)}%, ${esc(B.name)} ${((1-eA)*100).toFixed(0)}%. Net rating points swapped so far: ${esc(A.name)} ${signed(rec.net)}.</div>
     </div></div>
@@ -326,15 +328,15 @@ function renderStats(){
   const peak = L.list.reduce((m,p)=>!m||p.peak>m.peak?p:m, null);
   const bigGain = L.results.reduce((m,r)=>!m||r.gain>m.gain?r:m, null);
   const streak = L.list.reduce((m,p)=>!m||p.bestStreak>m.bestStreak?p:m, null);
-  const most = L.list.reduce((m,p)=>!m||p.ratedHere>m.ratedHere?p:m, null);
+  const most = L.list.reduce((m,p)=>!m||p.played>m.played?p:m, null);
   const improved = L.list.filter(p=>p.ratedHere).reduce((m,p)=>!m||(p.rating-p.seedRating)>(m.rating-m.seedRating)?p:m, null);
   const t = (k,v,s) => `<div class="tile"><span class="k">${k}</span><span class="v">${v}</span><span class="s">${s}</span></div>`;
   $("sTiles").innerHTML = [
-    top ? t("Highest-rated player", esc(top.name), `<span class="num">${top.rating}</span> · ${divChip(top.division)}`) : "",
-    peak ? t("Highest rating ever", `<span class="num">${peak.peak}</span>`, esc(peak.name)) : "",
-    bigGain ? t("Biggest single gain", `<span class="num up">+${bigGain.gain}</span>`, `${esc(nameOf(bigGain.winnerId))} beat ${esc(nameOf(bigGain.loserId))}, ${fmtDate(bigGain.date)}`) : "",
+    top ? t("Highest-rated player", esc(top.name), `<span class="num">${F(top.rating)}</span> · ${divChip(top.division)}`) : "",
+    peak ? t("Highest rating ever", `<span class="num">${F(peak.peak)}</span>`, esc(peak.name)) : "",
+    bigGain ? t("Biggest single gain", `<span class="num up">+${F(bigGain.gain)}</span>`, `${esc(nameOf(bigGain.winnerId))} beat ${esc(nameOf(bigGain.loserId))}, ${fmtDate(bigGain.date)}`) : "",
     streak ? t("Longest winning streak", `<span class="num">${streak.bestStreak}</span>`, esc(streak.name)) : "",
-    most ? t("Most matches played", `<span class="num">${most.ratedHere}</span>`, esc(most.name)) : "",
+    most ? t("Most matches played", `<span class="num">${most.played}</span>`, esc(most.name)) : "",
     improved ? t("Most improved", `<span class="num up">${signed(improved.rating-improved.seedRating)}</span>`, `${esc(improved.name)} since joining`) : "",
   ].join("") || `<div class="empty">Stats appear after the first result.</div>`;
   const maxN = Math.max(1, ...RULES.divisions.map(d => act.filter(p=>p.division.name===d.name).length));
@@ -354,7 +356,7 @@ function renderAdmin(){
     ? "Each player moves by their own K. A new player beating a veteran gains more than the veteran loses."
     : "Both players use the average of their two K values, so the winner gains exactly what the loser loses (unless the loser hits the 250 floor).";
   if (state.demo){ $("aPlayers").innerHTML = `<tr><td colspan="5" class="empty">No players yet. Add your first player above.</td></tr>`; return; }
-  $("aPlayers").innerHTML = alpha().map(p => `<tr data-pid="${esc(p.id)}"><td>${pbtn(p.id)}</td><td class="r num">${p.seedRating}</td><td class="r num">${p.ratedHere}</td>
+  $("aPlayers").innerHTML = alpha().map(p => `<tr data-pid="${esc(p.id)}"><td>${pbtn(p.id)}</td><td class="r num">${F(p.seedRating)}</td><td class="r num">${p.ratedHere}</td>
     <td>${p.active?'<span class="small up">Active</span>':'<span class="small muted">Inactive · hidden from table</span>'}</td>
     <td class="r"><button class="btn link" data-rename="${esc(p.id)}">Rename</button><button class="btn link" data-toggle="${esc(p.id)}">${p.active?"Make inactive":"Reactivate"}</button>${p.ratedHere?"":`<button class="btn link" data-remove="${esc(p.id)}" style="color:var(--loss)">Remove</button>`}</td></tr>`).join("");
 }
@@ -419,7 +421,7 @@ $("eSave").addEventListener("click", async () => {
   $("eSave").disabled = true;
   try {
     await api("addMatches", {matches:[{winnerId:w, loserId:l, date:d}]});
-    toast(`Saved. ${x.W.name} ${signed(x.gain)} (${x.W.rating + x.gain}), ${x.L.name} ${signed(-x.loss)} (${x.L.rating - x.loss}).`);
+    toast(`Saved. ${x.W.name} ${signed(x.gain)} (${F(x.W.rating + x.gain)}), ${x.L.name} ${signed(-x.loss)} (${F(x.L.rating - x.loss)}).`);
     $("eWinner").value = ""; $("eLoser").value = ""; updatePreview();
   } catch(err){ writeFailed(err); $("eSave").disabled = false; }
 });
@@ -429,8 +431,8 @@ $("ppSelect").addEventListener("change", e => { state.playerId = e.target.value;
 $("hA").addEventListener("change", e => { state.h2h[0] = e.target.value; renderH2H(); });
 $("hB").addEventListener("change", e => { state.h2h[1] = e.target.value; renderH2H(); });
 
-async function addPlayer(name, seedRating, seedMatches){
-  const d = await api("addPlayer", {name, seedRating, seedMatches});
+async function addPlayer(name, seedRating, seedMatches, seedWins){
+  const d = await api("addPlayer", {name, seedRating, seedMatches, seedWins});
   return d.id;
 }
 $("aAdd").addEventListener("click", async () => {
@@ -439,8 +441,9 @@ $("aAdd").addEventListener("click", async () => {
   if (!name) return $("aErr").textContent = "Enter a name.";
   if (!state.db) return $("aErr").textContent = "Saving isn't available in this view.";
   if (state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) return $("aErr").textContent = "That player is already on the list.";
-  const sr = $("aSeedR").value === "" ? null : +$("aSeedR").value, sm = $("aSeedM").value === "" ? 0 : Math.max(0, Math.floor(+$("aSeedM").value));
-  try { await addPlayer(name, sr, sm); $("aName").value = ""; $("aSeedR").value = ""; $("aSeedM").value = ""; toast(`${name} added at ${sr ?? RULES.start}.`); $("aName").focus(); }
+  const sr = $("aSeedR").value === "" ? null : +$("aSeedR").value, sm = $("aSeedM").value === "" ? 0 : Math.max(0, Math.floor(+$("aSeedM").value)), sw = $("aSeedW").value === "" ? 0 : Math.max(0, Math.floor(+$("aSeedW").value));
+  if (sw > sm) return $("aErr").textContent = "Wins can't be more than matches played.";
+  try { await addPlayer(name, sr, sm, sw); $("aName").value = ""; $("aSeedR").value = ""; $("aSeedM").value = ""; $("aSeedW").value = ""; toast(`${name} added at ${F(sr ?? RULES.start)}.`); $("aName").focus(); }
   catch(err){ writeFailed(err); }
 });
 $("aName").addEventListener("keydown", e => { if (e.key === "Enter") $("aAdd").click(); });
@@ -487,7 +490,7 @@ async function saveCSV(filename, rows){
 }
 $("xTable").addEventListener("click", () => saveCSV(`mrc-league-table-${today()}.csv`, [
   ["Rank","Player","Rating","Last change","Played","Wins","Losses","Win %","Division","Highest rating","Best win streak"],
-  ...ranked().map((p,i) => [i+1, p.name, p.rating, p.lastChange ?? "", p.ratedHere, p.wins, p.losses, p.winPct==null?"":p.winPct.toFixed(1), p.division.name, p.peak, p.bestStreak])]));
+  ...ranked().map((p,i) => [i+1, p.name, p.rating, p.lastChange ?? "", p.played, p.wins, p.losses, p.winPct==null?"":p.winPct.toFixed(1), p.division.name, p.peak, p.bestStreak])]));
 $("xMatches").addEventListener("click", () => saveCSV(`mrc-results-${today()}.csv`, [
   ["Date","Winner","Loser","Winner before","Loser before","Winner expected","Winner K","Loser K","Points won","Points lost","Winner after","Loser after"],
   ...state.ladder.results.map(r => [r.date, nameOf(r.winnerId), nameOf(r.loserId), r.wBefore, r.lBefore, r.eW.toFixed(3), r.kW, r.kL, r.gain, r.loss, r.wAfter, r.lAfter])]));

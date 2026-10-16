@@ -62,8 +62,9 @@ switch ($action) {
     if ($name === '') { $err = 'Enter a name.'; break; }
     if ($nameTaken($name)) { $err = 'That player is already on the list.'; break; }
     $p = ['id' => newId(), 'name' => $name, 'active' => true, 'createdAt' => round(microtime(true) * 1000)];
-    if (isset($req['seedRating']) && is_numeric($req['seedRating'])) { $p['seedRating'] = max(250, min(3000, (int)$req['seedRating'])); }
+    if (isset($req['seedRating']) && is_numeric($req['seedRating'])) { $p['seedRating'] = round(max(250, min(3000, (float)$req['seedRating'])), 1); }
     if (!empty($req['seedMatches'])) { $p['seedMatches'] = max(0, min(10000, (int)$req['seedMatches'])); }
+    if (!empty($req['seedWins'])) { $p['seedWins'] = max(0, min($p['seedMatches'] ?? 0, (int)$req['seedWins'])); }
     $data['players'][] = $p; $result['id'] = $p['id'];
     break;
   case 'updatePlayer':
